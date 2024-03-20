@@ -19,8 +19,11 @@ import math
 ev3 = EV3Brick()
 left_motor = Motor(Port.D)
 right_motor = Motor(Port.A)
+servo_motor = Motor(Port.C)
 
-robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=125)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=140)
+robot.settings(50, 50, 50, 50)
+
 
 def string_to_coordinates(string):
     string = string[1:-1]
@@ -83,12 +86,15 @@ def move_along_path(path, start_position):
         #robot.turn(angle)
         print("Girando" ,angle, "grados")
         robot.turn(angle)
+    
         # Calcula la distancia a moverse en milímetros
         distance = math.sqrt((x - current_position[0])**2 + (y - current_position[1])**2) * 10  # cada unidad es mm
         # Mueve el robot a la posición (x, y)
         #robot.straight(distance)
         print("Moviendose",distance, " mm")
+        servo_motor.run_angle(150,90)
         robot.straight(distance)
+        servo_motor.run_angle(150,-90)
         # Actualiza la posición actual
         current_position = (x, y)
         full_path.append(current_position)
@@ -96,7 +102,7 @@ def move_along_path(path, start_position):
         print("Llegó a la posición", (x,y))
 
         # Si es el último punto, vuelve al inicio
-        if i == len(path) - 1:
+        '''if i == len(path) - 1:
             print("Volviendo al inicio ({start_position[0]},{start_position[1]})")
             # Calcula el ángulo y la distancia al punto de inicio
             angle = math.degrees(math.atan2(start_position[1] - y, start_position[0] - x))
@@ -108,7 +114,7 @@ def move_along_path(path, start_position):
             # Mueve el robot al punto de inicio
             print("Moviendose {distance} mm")
             robot.straight(distance)
-            #full_path.append(start_position)
+            #full_path.append(start_position)'''
 
     return full_path
 
@@ -135,6 +141,7 @@ while True:
     if(rbox2.read()=='inicia'):
         #robot.straight(100)
         start_position = (0,17)
+        verdes = [(33, 17), (60, 34)]
         coordinates = string_to_coordinates(verdes)
         print(coordinates)
         path = calculate_optimal_path(coordinates, start_position)

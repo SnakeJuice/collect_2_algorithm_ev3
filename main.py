@@ -95,13 +95,18 @@ def move_along_path(path, start_position):
         print("Moviendose a ",(x,y))
 
         # Calcula el ángulo entre la posición actual y la próxima posición
-        angle = math.degrees(math.atan2(y - current_position[1], x - current_position[0]))
-        angle = angle * -1
+        target_angle = math.degrees(math.atan2(y - current_position[1], x - current_position[0]))
+        target_angle = target_angle * -1
+        
+        # Calcula el ángulo relativo entre el robot y la próxima posición
+        relative_angle = target_angle - current_angle
 
         # Gira el robot hacia el ángulo correcto
-        #robot.turn(angle)
-        print("Girando" ,angle, "grados")
-        robot.turn(angle)
+        print("Girando" ,relative_angle, "grados")
+        robot.turn(relative_angle)
+        
+        # Actualiza el ángulo actual
+        current_angle = target_angle
     
         # Calcula la distancia a moverse en milímetros
         distance = math.sqrt((x - current_position[0])**2 + (y - current_position[1])**2) * 10  # cada unidad es mm

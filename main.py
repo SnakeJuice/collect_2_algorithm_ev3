@@ -24,13 +24,7 @@ from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
 from pybricks.messaging import BluetoothMailboxClient, TextMailbox
-
 import math
-
-#import itertools
-
-# This program requires LEGO EV3 MicroPython v2.0 or higher.
-# Click "Open user guide" on the EV3 extension tab for more information.
 
 
 # Create your objects here.
@@ -60,6 +54,9 @@ def distance(point1, point2):
 #Traveling Salesman Problem - Brute Force
 #Complejidad factorial! O(n!)
 def calculate_optimal_path(coordinates, start_position):
+    # Sort
+    coordinates.sort(key=lambda coord: coord[0])
+    
     # Calcula la distancia de cada coordenada al punto de inicio
     distances = [distance(start_position, coord) for coord in coordinates]
 
@@ -94,57 +91,33 @@ def generate_permutations(lst):
 def move_along_path(path, start_position):
     current_position = start_position
     full_path = [current_position]
-    
-    #Direcciones posibles
-    RIGHT = 0
-    UP = 1
-    LEFT = 2
-    DOWN = 3
-    
-    #Dirección actual
-    current_direction = RIGHT
-    
     for i, (x, y) in enumerate(path):
         print("Moviendose a ",(x,y))
-        next_direction = None
 
-        # Calcula la diferencia en X y Y entre la posición actual y la siguiente
-        dx = x - current_position[0]
-        dy = y - current_position[1]
-        
-        # Dependiendo de la diferencia, establecemos la próxima dirección
-        if dx > 0:
-            next_direction = RIGHT
-        elif dx < 0:
-            next_direction = LEFT
-        elif dy > 0:
-            next_direction = DOWN
-        elif dy < 0:
-            next_direction = UP
-            
-        # Calculamos el angulo de giro comparando la próxima dirección con la actual
-        turn_angle = (next_direction - current_direction) % 4
-        # Si el ángulo de giro es 1, giramos a la izquierda
-        if turn_angle == 1:
-            robot.turn(-90)
-        # Si el ángulo de giro es 3, giramos a la derecha
-        elif turn_angle == 3:
-            robot.turn(90)
-            
-        # Actualizamos la dirección actual
-        current_direction = next_direction
-        
-        # Calculamos la distancia a la que debemos movernos
-        distance = math.sqrt(dx**2 + dy**2) * 10 # cada unidad es mm
-        # Mueve el robot a la posición (x,y)
+        # Calcula el ángulo entre la posición actual y la próxima posición
+        angle = math.degrees(math.atan2(y - current_position[1], x - current_position[0]))
+        angle = angle * -1
+
+        # Gira el robot hacia el ángulo correcto
+        #robot.turn(angle)
+        print("Girando" ,angle, "grados")
+        robot.turn(angle)
+    
+        # Calcula la distancia a moverse en milímetros
+        distance = math.sqrt((x - current_position[0])**2 + (y - current_position[1])**2) * 10  # cada unidad es mm
+        # Mueve el robot a la posición (x, y)
+        #robot.straight(distance)
+        print("Moviendose",distance, " mm")
+        servo_motor.run_angle(150,90)
         robot.straight(distance)
+        servo_motor.run_angle(150,-90)
         # Actualiza la posición actual
         current_position = (x, y)
-        # Añade la posición actual a la lista de posiciones
         full_path.append(current_position)
         
+        print("Llegó a la posición", (x,y))
 
-        # Si es el último punto, vuelve al inicio!
+        # Si es el último punto, vuelve al inicio
         '''if i == len(path) - 1:
             print("Volviendo al inicio ({start_position[0]},{start_position[1]})")
             # Calcula el ángulo y la distancia al punto de inicio

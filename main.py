@@ -55,7 +55,7 @@ def distance(point1, point2):
 #Complejidad factorial! O(n!)
 def calculate_optimal_path(coordinates, start_position):
     # Sort
-    coordinates.sort(key=lambda coord: coord[0])
+    coordinates.sort(key=lambda coord: (coord[1], coord[0]))
     
     # Calcula la distancia de cada coordenada al punto de inicio
     distances = [distance(start_position, coord) for coord in coordinates]
@@ -67,16 +67,8 @@ def calculate_optimal_path(coordinates, start_position):
     coordinates.remove(closest_coord)
     coordinates.insert(0, closest_coord)
 
-    # Genera todas las permutaciones posibles de las coordenadas
-    permutations = generate_permutations(coordinates)
 
-    # Calcula la longitud total de cada permutación
-    lengths = [sum(distance(point1, point2) for point1, point2 in zip(permutation[:-1], permutation[1:])) for permutation in permutations]
-
-    # Encuentra la permutación con la longitud más corta
-    shortest_permutation = permutations[lengths.index(min(lengths))]
-
-    return shortest_permutation
+    return coordinates
 
 def generate_permutations(lst):
     if len(lst) == 0:

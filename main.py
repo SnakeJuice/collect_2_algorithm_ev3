@@ -1,6 +1,6 @@
 #!/usr/bin/env pybricks-micropython
 ##########################################################
-# Algoritmo de recolección para robot LEGO EV3           #
+# Algoritmo de recolección sin obstaculos para robot EV3 #
 #                                                        #
 # Autores:                                               #
 # - Cristian Anjari                                      #
@@ -15,7 +15,7 @@
 # Analista en Computación Científica                     #
 #                                                        #
 # Santiago, Chile                                        #
-# 03/03/2024                                             #
+# 25/03/2024                                             #
 ##########################################################
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor, InfraredSensor, UltrasonicSensor, GyroSensor)
@@ -36,7 +36,16 @@ servo_motor = Motor(Port.C)
 robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=140)
 robot.settings(50, 50, 50, 50)
 
-
+"""
+    Convierte coordenadas en formato string en una lista de tuplas.
+    
+    Parámetros:
+        string (str): El string de coordenadas convertir.
+        is_obstacle (bool): Si las coordenadas representan un obstáculo.
+        
+    Devuelve:
+        coords: Una lista de tuplas que representan las coordenadas.
+"""
 def string_to_coordinates(string):
     string = string[1:-1]
     parts = string.split("), (")
@@ -45,18 +54,35 @@ def string_to_coordinates(string):
         x, y = part.split(", ")
         coords.append((int(x.strip("(")), int(y.strip(")"))))
     return coords
+#################################################
 
-#Mejor heuristica para movimientos en 4 direcciones
+"""
+    Calcula la distancia Euclidiana entre dos puntos.
+
+    Parámetros:
+        point1 (tuple): El primer punto.
+        point2 (tuple): El segundo punto.
+
+    Devuelve:
+        float: La distancia Euclidiana entre los dos puntos.
+"""
 def distance(point1, point2):
-    # Calcula la distancia de Manhattan entre dos puntos
-    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+    return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+#################################################
 
-#Traveling Salesman Problem - Brute Force
-#Complejidad factorial! O(n!)
-def calculate_optimal_path(coordinates, start_position):
-    # Sort
+"""
+    Ordena las coordenadas de acuerdo a su posición en el plano cartesiano.
+    
+    Parámetros:
+        coordinates (list): La lista de coordenadas a ordenar.
+        
+    Devuelve:
+        list: La lista de coordenadas ordenadas.
+"""
+def sort_path(coordinates):
     coordinates.sort(key=lambda coord: (coord[1], coord[0]))
     
+    '''
     # Calcula la distancia de cada coordenada al punto de inicio
     distances = [distance(start_position, coord) for coord in coordinates]
 
@@ -66,20 +92,25 @@ def calculate_optimal_path(coordinates, start_position):
     # Usa esa coordenada como el punto de inicio para el algoritmo del viajante de comercio
     coordinates.remove(closest_coord)
     coordinates.insert(0, closest_coord)
-
+    '''
 
     return coordinates
+#################################################
 
-def generate_permutations(lst):
-    if len(lst) == 0:
-        return [[]]
-    permutations = []
-    for i in range(len(lst)):
-        sub_permutations = generate_permutations(lst[:i] + lst[i+1:])
-        for perm in sub_permutations:
-            permutations.append([lst[i]] + perm)
-    return permutations
+"""
+    Mueve el robot a lo largo de un camino dado.
+    
+    Parámetros:
+        path (list): La lista de coordenadas a seguir.
+        start_position (tuple): La posición inicial del robot.
+        
+    Devuelve:
+        list: La lista de coordenadas que el robot recorrió.
+        
+    Nota:
+        Se asume que el robot está en la posición inicial.
 
+"""
 def move_along_path(path, start_position):
     current_position = start_position
     full_path = [current_position]
@@ -114,22 +145,12 @@ def move_along_path(path, start_position):
         
         print("Llegó a la posición", (x,y))
 
-        # Si es el último punto, vuelve al inicio
-        '''if i == len(path) - 1:
-            print("Volviendo al inicio ({start_position[0]},{start_position[1]})")
-            # Calcula el ángulo y la distancia al punto de inicio
-            angle = math.degrees(math.atan2(start_position[1] - y, start_position[0] - x))
-            distance = math.sqrt((start_position[0] - x)**2 + (start_position[1] - y)**2) * 10
-            # Gira el robot hacia el ángulo correcto
-            #robot.turn(angle)
-            print("Girando {angle} grados")
-            robot.turn(angle)
-            # Mueve el robot al punto de inicio
-            print("Moviendose {distance} mm")
-            robot.straight(distance)
-            #full_path.append(start_position)'''
-
     return full_path
+#################################################
+
+#################################################
+##----------------- main ----------------------##
+#################################################
 
 SERVER = 'Master'
 
@@ -157,5 +178,5 @@ while True:
         verdes = [(33, 17), (60, 34)]
         coordinates = string_to_coordinates(verdes)
         print(coordinates)
-        path = calculate_optimal_path(coordinates, start_position)
+        path = sort_path(coordinates)
         full_path = move_along_path(path, start_position)

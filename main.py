@@ -121,6 +121,18 @@ def move_along_path(path, start_position):
         target_angle = math.degrees(math.atan2(y - current_position[1], x - current_position[0]))
         target_angle = target_angle * -1
         
+        # Ajusta el ángulo actual para que esté en el mismo rango que el ángulo objetivo
+        while current_angle - angle > 180:
+            current_angle -= 360
+        while current_angle - angle < -180:
+            current_angle += 360
+            
+        # Ajuste para el angulo.
+        if angle < 0: # Si es negativo
+            angle = angle + 7 # Le quitamos
+        elif angle > 0: # Si es positivo
+            angle = angle - 7 # Le quitamos
+        
         # Calcula el ángulo relativo entre el robot y la próxima posición
         relative_angle = target_angle - current_angle
 

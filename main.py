@@ -175,7 +175,6 @@ while True:
     if(rbox2.read()=='inicia'):
         #robot.straight(100)
         start_position = (0,17)
-        verdes = [(33, 17), (60, 34)]
         coordinates = string_to_coordinates(verdes)
         print(coordinates)
         path = sort_path(coordinates)

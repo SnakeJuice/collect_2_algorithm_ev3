@@ -34,7 +34,7 @@ right_motor = Motor(Port.A)
 servo_motor = Motor(Port.C)
 
 robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=140)
-robot.settings(50, 50, 50, 50)
+robot.settings(straight_speed=40, straight_acceleration=40, turn_rate=40, turn_acceleration=35)
 
 """
     Convierte coordenadas en formato string en una lista de tuplas.
@@ -54,6 +54,14 @@ def string_to_coordinates(string):
         x, y = part.split(", ")
         coords.append((int(x.strip("(")), int(y.strip(")"))))
     return coords
+#################################################
+
+def adjust_coordinates(coordinates):
+    for i, (x, y) in enumerate(coordinates):
+        if y == 102:
+            coordinates[i] = (x - 9, y)
+    return coordinates
+
 #################################################
 
 """
@@ -81,20 +89,31 @@ def distance(point1, point2):
 """
 def sort_path(coordinates):
     coordinates.sort(key=lambda coord: (coord[1], coord[0]))
-    
-    '''
-    # Calcula la distancia de cada coordenada al punto de inicio
-    distances = [distance(start_position, coord) for coord in coordinates]
-
-    # Selecciona la coordenada más cercana al punto de inicio
-    closest_coord = coordinates[distances.index(min(distances))]
-
-    # Usa esa coordenada como el punto de inicio para el algoritmo del viajante de comercio
-    coordinates.remove(closest_coord)
-    coordinates.insert(0, closest_coord)
-    '''
 
     return coordinates
+#################################################
+
+
+def calculate_relative_angle(current_angle, target_angle):
+    # Ajusta el ángulo actual para que esté en el mismo rango que el ángulo objetivo
+    while current_angle - target_angle > 180:
+        current_angle -= 360
+    while current_angle - target_angle < -180:
+        current_angle += 360
+
+    relative_angle = target_angle - current_angle
+
+    # Agrega un extra a los grados cada vez que sean negativos o positivos
+    extra = 5  # Define el extra que quieres agregar
+    threshold = 0.01  # Define el umbral
+
+    if abs(relative_angle) > threshold:
+        if relative_angle < 0:
+            relative_angle += extra
+        elif relative_angle > 0:
+            relative_angle -= extra
+
+    return relative_angle
 #################################################
 
 """
@@ -112,50 +131,41 @@ def sort_path(coordinates):
 
 """
 def move_along_path(path, start_position):
+    current_angle = robot.angle()
     current_position = start_position
     full_path = [current_position]
+
     for i, (x, y) in enumerate(path):
         print("Moviendose a ",(x,y))
 
         # Calcula el ángulo entre la posición actual y la próxima posición
-        target_angle = math.degrees(math.atan2(y - current_position[1], x - current_position[0]))
-        target_angle = target_angle * -1
+        angle = -(math.degrees(math.atan2(y - current_position[1], x - current_position[0])))
         
-        # Ajusta el ángulo actual para que esté en el mismo rango que el ángulo objetivo
-        while current_angle - angle > 180:
-            current_angle -= 360
-        while current_angle - angle < -180:
-            current_angle += 360
-            
-        # Ajuste para el angulo.
-        if angle < 0: # Si es negativo
-            angle = angle + 7 # Le quitamos
-        elif angle > 0: # Si es positivo
-            angle = angle - 7 # Le quitamos
+        relative_angle = calculate_relative_angle(current_angle, angle)
         
-        # Calcula el ángulo relativo entre el robot y la próxima posición
-        relative_angle = target_angle - current_angle
-
-        # Gira el robot hacia el ángulo correcto
-        print("Girando" ,relative_angle, "grados")
+        # Agrega un extra a los grados cada vez que sean negativos o positivos
+        print("Relative_angle ", relative_angle)
+        
+        #relative_angle = math.floor(relative_angle)
+        print("Girando " ,relative_angle, "grados")
         robot.turn(relative_angle)
+
+        current_angle = angle
         
-        # Actualiza el ángulo actual
-        current_angle = target_angle
-    
         # Calcula la distancia a moverse en milímetros
         distance = math.sqrt((x - current_position[0])**2 + (y - current_position[1])**2) * 10  # cada unidad es mm
+        
         # Mueve el robot a la posición (x, y)
-        #robot.straight(distance)
-        print("Moviendose",distance, " mm")
-        servo_motor.run_angle(150,90)
+        print("Moviendose ",distance, " mm")
+        servo_motor.run_angle(150,50)
         robot.straight(distance)
-        servo_motor.run_angle(150,-90)
+        servo_motor.run_angle(150,-50)
+        
         # Actualiza la posición actual
         current_position = (x, y)
         full_path.append(current_position)
         
-        print("Llegó a la posición", (x,y))
+        print("Llegó a la posición ", (x,y))
 
     return full_path
 #################################################
@@ -185,9 +195,10 @@ while True:
     rbox2.send('ok verdes') 
     rbox2.wait_new()   
     if(rbox2.read()=='inicia'):
-        #robot.straight(100)
+        robot.reset()
         start_position = (0,17)
         coordinates = string_to_coordinates(verdes)
+        coordinates = adjust_coordinates(coordinates)
         print(coordinates)
         path = sort_path(coordinates)
         full_path = move_along_path(path, start_position)

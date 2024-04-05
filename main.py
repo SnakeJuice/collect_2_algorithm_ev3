@@ -58,8 +58,16 @@ def string_to_coordinates(string):
 
 def adjust_coordinates(coordinates):
     for i, (x, y) in enumerate(coordinates):
-        if y == 102:
-            coordinates[i] = (x - 9, y)
+        if y == 100:
+            coordinates[i] = (x - 5, y)
+        if y == 80:
+            coordinates[i] = (x - 10, y)
+        if y == 60:
+            coordinates[i] = (x - 5, y)
+        if y == 40:
+            coordinates[i] = (x - 5, y)
+        #if y == 20:
+        #    coordinates[i] = (x - 10, y)
     return coordinates
 
 #################################################
@@ -104,7 +112,7 @@ def calculate_relative_angle(current_angle, target_angle):
     relative_angle = target_angle - current_angle
 
     # Agrega un extra a los grados cada vez que sean negativos o positivos
-    extra = 5  # Define el extra que quieres agregar
+    extra = 6 # Define el extra que quieres agregar
     threshold = 0.01  # Define el umbral
 
     if abs(relative_angle) > threshold:
@@ -158,7 +166,9 @@ def move_along_path(path, start_position):
         # Mueve el robot a la posición (x, y)
         print("Moviendose ",distance, " mm")
         servo_motor.run_angle(150,50)
+        
         robot.straight(distance)
+            
         servo_motor.run_angle(150,-50)
         
         # Actualiza la posición actual
@@ -196,7 +206,7 @@ while True:
     rbox2.wait_new()   
     if(rbox2.read()=='inicia'):
         robot.reset()
-        start_position = (0,17)
+        start_position = (0,20)
         coordinates = string_to_coordinates(verdes)
         coordinates = adjust_coordinates(coordinates)
         print(coordinates)

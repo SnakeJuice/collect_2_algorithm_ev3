@@ -112,7 +112,7 @@ def calculate_relative_angle(current_angle, target_angle):
     relative_angle = target_angle - current_angle
 
     # Agrega un extra a los grados cada vez que sean negativos o positivos
-    extra = 6 # Define el extra que quieres agregar
+    extra = 7 # Define el extra que quieres agregar
     threshold = 0.01  # Define el umbral
 
     if abs(relative_angle) > threshold:
@@ -142,6 +142,7 @@ def move_along_path(path, start_position):
     current_angle = robot.angle()
     current_position = start_position
     full_path = [current_position]
+    extra_distance = 50 # 5cm
 
     for i, (x, y) in enumerate(path):
         print("Moviendose a ",(x,y))
@@ -157,11 +158,17 @@ def move_along_path(path, start_position):
         #relative_angle = math.floor(relative_angle)
         print("Girando " ,relative_angle, "grados")
         robot.turn(relative_angle)
+        wait(10000)
+        ev3.speaker.beep()
 
         current_angle = angle
         
         # Calcula la distancia a moverse en milímetros
         distance = math.sqrt((x - current_position[0])**2 + (y - current_position[1])**2) * 10  # cada unidad es mm
+        
+        # Si el robot está cambiando de fila, agrega una distancia extra
+        if current_position[1] != y:
+            distance += extra_distance
         
         # Mueve el robot a la posición (x, y)
         print("Moviendose ",distance, " mm")
@@ -206,7 +213,7 @@ while True:
     rbox2.wait_new()   
     if(rbox2.read()=='inicia'):
         robot.reset()
-        start_position = (0,20)
+        start_position = (-17,40)
         coordinates = string_to_coordinates(verdes)
         coordinates = adjust_coordinates(coordinates)
         print(coordinates)

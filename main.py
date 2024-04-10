@@ -101,12 +101,28 @@ def sort_path(coordinates):
     return coordinates
 #################################################
 
-
+"""
+    Calcula el ángulo relativo entre el ángulo actual y el ángulo objetivo.
+    
+    Parámetros:
+        current_angle (float): El ángulo actual del robot.
+        target_angle (float): El ángulo objetivo al que el robot quiere girar.
+        
+    Devuelve:
+        float: El ángulo relativo que el robot necesita girar para alcanzar el ángulo objetivo.
+        
+    Nota:
+        Esta función también agrega un extra a los grados cada vez que sean negativos o positivos.
+"""
 def calculate_relative_angle(current_angle, target_angle):
     # Ajusta el ángulo actual para que esté en el mismo rango que el ángulo objetivo
+    #Mientras el ángulo actual - el ángulo objetivo sea mayor a 180
     while current_angle - target_angle > 180:
+        #Resta 360 al ángulo actual
         current_angle -= 360
+    #Mientras el ángulo actual - el ángulo objetivo sea menor a -180
     while current_angle - target_angle < -180:
+        #Suma 360 al ángulo actual
         current_angle += 360
 
     relative_angle = target_angle - current_angle
@@ -115,10 +131,15 @@ def calculate_relative_angle(current_angle, target_angle):
     extra = 7 # Define el extra que quieres agregar
     threshold = 0.01  # Define el umbral
 
+    # Si el ángulo relativo es mayor al umbral, agrega el extra
     if abs(relative_angle) > threshold:
+        # Si el ángulo relativo es negativo, agrega el extra
         if relative_angle < 0:
+            # Se le quita el extra a los grados
             relative_angle += extra
+        # Si el ángulo relativo es positivo, agrega el extra
         elif relative_angle > 0:
+            # Se le quita el extra a los grados 
             relative_angle -= extra
 
     return relative_angle

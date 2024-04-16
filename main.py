@@ -127,7 +127,7 @@ def calculate_relative_angle(current_angle, target_angle):
 
     relative_angle = target_angle - current_angle
 
-    """
+    
     # Agrega un extra a los grados cada vez que sean negativos o positivos
     extra = 7 # Define el extra que quieres agregar
     threshold = 0.01  # Define el umbral
@@ -137,12 +137,12 @@ def calculate_relative_angle(current_angle, target_angle):
         # Si el ángulo relativo es negativo, agrega el extra
         if relative_angle < 0:
             # Se le quita el extra a los grados
-            relative_angle += extra
+            relative_angle -= extra
         # Si el ángulo relativo es positivo, agrega el extra
         elif relative_angle > 0:
             # Se le quita el extra a los grados 
-            relative_angle -= extra
-    """
+            relative_angle += extra
+    
 
     return relative_angle
 #################################################
@@ -179,7 +179,7 @@ def move_along_path(path, start_position):
         print("Relative_angle ", relative_angle)
         
         #relative_angle = math.floor(relative_angle)
-        print("Girando " ,relative_angle, "grados"
+        print("Girando " ,relative_angle, "grados")
         robot.turn(relative_angle)
         wait(10000)
         ev3.speaker.beep()
